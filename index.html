@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocCluster AI — Premium Document Management</title>
+    <!-- Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- BACKGROUND EFFECTS -->
+    <div class="blob-bg"></div>
+    <div class="blob-bg blob-2"></div>
+    <div class="blob-bg blob-3"></div>
+
+    <div class="app-container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon"><i class="fa-solid fa-layer-group"></i></div>
+                <div class="logo-text">DocCluster <span>AI</span></div>
+            </div>
+            <p class="tagline">Organize thousands of documents into smart categories in seconds.</p>
+        </header>
+
+        <main>
+            <!-- TOP STATS (Optional Visual Flare) -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <span class="stat-value" id="staged-count">0</span>
+                    <span class="stat-label">Files Staged</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="k-display">5</span>
+                    <span class="stat-label">Target Folders</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">AI</span>
+                    <span class="stat-label">Powered</span>
+                </div>
+            </div>
+
+            <!-- UPLOAD AREA -->
+            <section class="glass-panel upload-section">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-cloud-arrow-up"></i> Document Upload</h2>
+                </div>
+                
+                <div id="drop-zone" class="drop-zone">
+                    <div class="drop-inner">
+                        <div class="icon-circle">
+                            <i class="fa-solid fa-folder-open"></i>
+                        </div>
+                        <h3>Drop your documents here</h3>
+                        <p>Support for PDF, DOCX, CSV, and TXT</p>
+                        <div class="btn-group">
+                            <button class="btn btn-glass" onclick="document.getElementById('file-input').click()">
+                                <i class="fa-solid fa-file-circle-plus"></i> Select Files
+                            </button>
+                            <button class="btn btn-glass" onclick="document.getElementById('folder-input').click()">
+                                <i class="fa-solid fa-folder-tree"></i> Select Folder
+                            </button>
+                        </div>
+                        <input type="file" id="file-input" multiple accept=".txt,.pdf,.docx,.csv" hidden>
+                        <input type="file" id="folder-input" webkitdirectory directory hidden>
+                    </div>
+                </div>
+                
+                <div class="text-input-panel">
+                    <p class="label">Or paste raw text content:</p>
+                    <div class="textarea-wrapper">
+                        <textarea id="doc-input" rows="2" placeholder="Paste text here (each line = one doc)..."></textarea>
+                        <button class="btn btn-accent-sm" onclick="addPastedText()">Add</button>
+                    </div>
+                </div>
+
+                <!-- STAGED FILES (Floating/Dynamic List) -->
+                <div id="staged-files-container" class="staged-files hidden">
+                    <div class="staged-header">
+                        <h4>Ready to Cluster</h4>
+                        <button class="btn-text" onclick="clearAllStaged()">Clear All</button>
+                    </div>
+                    <ul id="staged-list" class="staged-list"></ul>
+                </div>
+                
+                <div class="sample-actions">
+                    <button class="btn btn-ghost" onclick="loadSampleDocs()">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Use Sample Documents
+                    </button>
+                </div>
+            </section>
+
+            <!-- CONFIGURATION AREA -->
+            <section class="glass-panel config-section">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-sliders"></i> AI Configuration</h2>
+                </div>
+                
+                <div class="config-grid">
+                    <div class="config-item">
+                        <label for="k-slider">Complexity (Cluster Count)</label>
+                        <div class="range-wrapper">
+                            <input type="range" id="k-slider" min="2" max="15" value="5" oninput="updateKValue(this.value)">
+                            <span class="range-bubble" id="k-bubble">5</span>
+                        </div>
+                    </div>
+
+                    <div class="config-item">
+                        <label for="custom-names">Label Preferences (Optional)</label>
+                        <input type="text" id="custom-names" placeholder="e.g. Invoices, Medical, Tech...">
+                    </div>
+                </div>
+                
+                <button id="cluster-btn" class="btn btn-primary-giant" onclick="runClustering()">
+                    <span>Start Intelligent Clustering</span>
+                    <i class="fa-solid fa-bolt"></i>
+                </button>
+            </section>
+
+            <!-- LOADING SCREEN -->
+            <div id="loading" class="loading-overlay hidden">
+                <div class="loader-content">
+                    <div class="quantum-spinner"></div>
+                    <h3>AI is thinking...</h3>
+                    <p id="loading-text">Vectorizing your documents and mapping high-dimensional space...</p>
+                </div>
+            </div>
+
+            <!-- ERROR MESSAGE -->
+            <div id="error-msg" class="glass-panel error-panel hidden"></div>
+
+            <!-- RESULTS AREA -->
+            <section id="results" class="results-section hidden">
+                <div class="results-toolbar glass-panel">
+                    <div class="toolbar-left">
+                        <h2><i class="fa-solid fa-folder-tree"></i> Organized Results</h2>
+                    </div>
+                    <div class="toolbar-right">
+                        <div class="search-input-wrapper">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="search-input" placeholder="Search across folders..." onkeyup="filterDocuments()">
+                        </div>
+                        <div class="export-btns">
+                            <button class="btn btn-glass-accent" onclick="downloadZip()"><i class="fa-solid fa-file-zipper"></i> ZIP</button>
+                            <button class="btn btn-glass-accent" onclick="downloadCSV()"><i class="fa-solid fa-file-csv"></i> CSV</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FOLDER GRID -->
+                <div id="folder-grid" class="folder-grid"></div>
+
+                <!-- VIZUALIZATION -->
+                <div class="glass-panel viz-panel">
+                    <div class="section-header">
+                        <h3><i class="fa-solid fa-chart-line"></i> Document Spatial Mapping</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="scatter-chart"></canvas>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2026 DocCluster AI. Premium Semantic Organization.</p>
+        </footer>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
